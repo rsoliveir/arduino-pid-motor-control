@@ -89,10 +89,12 @@ void control(){
 
     previous_error = error;
 
+    // limita o valor do ajuste da saída para o valor máximo de PWM da saída analógica.
     if (speedAdjustment > 255){
         speedAdjustment = 255;
     }
-    
+
+    // limita o valor do ajuste da saída para o valor mínimo de PWM da saída analógica.
     else if (speedAdjustment < 0){
         speedAdjustment = 0;
     }
@@ -104,6 +106,8 @@ void control(){
 
 // FUNÇÃO DE MONITORAMENTO REAL DA VELOCIDADE E CONTROLE
 void monitoring(){
+    // se for realizar o monitoramento pela IDE do arduino, retira o comentário das linhas
+    // abaixo e comenta as outras.
     /*
     Serial.print("SETPOINT:"); Serial.print(speedLevel); Serial.print(", ");
     Serial.print("FEEDBACK:"); Serial.print(speedFeedback); Serial.print(", ");
@@ -313,7 +317,8 @@ void loop(){
         }
         previousMillis = currentMillis;
     }
-
+    
+    // execução do programa de controle de velocidade
     if (currentMillis - programStartTime >= program_time[progStep] * 250 && isProgramRunning == true){
         speedLevel = program_target[progStep];
         run(CWdirection, speedLevel);
