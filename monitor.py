@@ -11,6 +11,9 @@ from PyQt5.QtCore import Qt
 from pyqtgraph import PlotWidget, BarGraphItem
 import time
 
+# essa classe envia dos comandos e recebe dos dados via seria
+# pode ser adaptada para interações com equipamentos utilizando
+# outros meios de comunicação como ethernet, wifi, etc.
 class SerialSensorReader:
     def __init__(self, port, baud_rate):
         self.serial_port = serial.Serial(port, baud_rate, timeout=1)
@@ -29,6 +32,7 @@ class SerialSensorReader:
     def send_command(self, command):
         self.serial_port.write(f"{command}\n".encode())
 
+# Configuração da tela de parametrização.
 class ConfigDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -84,6 +88,7 @@ class ConfigDialog(QDialog):
         )
 from PyQt5.QtGui import QFont
 
+# Configurações da tela principal
 class MainWindow(QMainWindow):
     def __init__(self, serial_port, baud_rate, sampling_rate, window_size):
         super().__init__()
@@ -174,13 +179,15 @@ class MainWindow(QMainWindow):
         self.timer.setInterval(250 // self.sampling_rate)
         self.timer.timeout.connect(self.update_plots)
         self.timer.start()
-
+        
     def start_autotuning(self):
         """Inicia o processo de autotuning usando o método Ziegler-Nichols."""
         if not self.is_tuning:
             self.is_tuning = True
             self.find_critical_parameters()
 
+    # o algoritmo de find_critical_parameters precisa ser aprimorado, pois o sistema, em alguns momentos, apresenta oscilações
+    # com os parâmetros calculados após o término do autotune.
     def find_critical_parameters(self):
         """Encontra K_u (ganho crítico) e P_u (período crítico) usando o método de Ziegler-Nichols."""
         print("Iniciando autotuning...")
@@ -206,7 +213,7 @@ class MainWindow(QMainWindow):
             try:
                 elapsed_time = current_time - start_time
                 self.update_values()
-                current_error = self.setpoint[-1] - self.feedback_filtered[-1]  # Supondo que 'feedback' e 'setpoint' são variáveis
+                current_error = self.setpoint[-1] - self.feedback_filtered[-1]
                 if previous_error is not None:
                     # Detecta se o sistema começou a oscilar (quando a diferença de erro muda de sinal repetidamente)
                     if current_error < 0:
@@ -223,6 +230,7 @@ class MainWindow(QMainWindow):
                     self.transient_timer = elapsed_time
             except:
                 pass
+                
         # Passo 3: Obter K_u e P_u
         if oscillating:
             print(f"Oscilações constantes encontradas com Kp = {self.Kp}")
